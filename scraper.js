@@ -1,13 +1,14 @@
 const puppeteer = require('puppeteer');
 
-(async () => {
+const getFilms = async (month, day) => {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
-  const url = 'https://iffr.com/en/programme/2020/per-day?date[value]=01/25/2020&hour=9';
+  const url = 'https://iffr.com/en/programme/2020/per-day?' +
+    `date[value]=${month}/${day}/2020&hour=9`;
   await page.goto(url);
 
-  const films = await page.evaluate(
-    () => Array.from(document.querySelectorAll('li.block-type-film'))
+  const films = await page.evaluate(() =>
+    Array.from(document.querySelectorAll('li.block-type-film'))
       .filter(film => film.getAttribute('data-showtype') === 'film')
       .filter(film => {
         const filmTypes = ['feature', 'short-film', 'mid-length'];
@@ -32,4 +33,6 @@ const puppeteer = require('puppeteer');
   console.log(films);
 
   await browser.close();
-})();
+};
+
+getFilms('01', '29');
