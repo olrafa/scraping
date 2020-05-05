@@ -39,7 +39,8 @@ const puppeteer = require('puppeteer');
   const browser = await puppeteer.launch();
 
   const festivalDays =
-    ['01/23', '01/24', '01/25', '01/26', '01/27', '01/28', '01/29', '01/30', '01/31', '02/01'];
+    ['01/23', '01/24'];
+  //, '01/25', '01/26', '01/27', '01/28', '01/29', '01/30', '01/31', '02/01'];
 
   const dailyUrls = festivalDays.map(fd => fd.split('/'));
 
@@ -56,7 +57,9 @@ const puppeteer = require('puppeteer');
   iffr[8] = await getFilms(dailyUrls[8][0], dailyUrls[8][1]);
   iffr[9] = await getFilms(dailyUrls[9][0], dailyUrls[9][1]);
 
-  console.log(iffr);
+  const iffrData = iffr.flat();
+
+  console.log(iffrData);
 
   await browser.close();
 })();
