@@ -61,9 +61,11 @@ const axios = require('axios');
 
   const iffrData = iffr.flat();
 
+  const samplePost = iffrData.slice(0, 4);
+
   const { baseUrl } = settings;
-  
-  axios.post(`${baseUrl}/scrape`, iffrData[8])
+
+  axios.post(`${baseUrl}/scrape`, samplePost)
     .then(function (response) {
       console.log(response.data.message);
     })
