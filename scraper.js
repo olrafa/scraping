@@ -1,36 +1,51 @@
-
-const puppeteer = require('puppeteer');
-const settings = require('./settings');
 const axios = require('axios');
+const puppeteer = require('puppeteer');
+
+const constants = require('./constants');
+const settings = require('./settings');
+const utils = require('./utils');
+
+const festivalDates = utils.rangeDays(constants.START_DATE, constants.END_DATE).map(date => {
+  const dayMonth = date.getDate();
+  const month = date.getMonth() + 1;
+  return {
+    day: dayMonth < 10 ? `0${dayMonth}` : dayMonth.toString(),
+    month: month < 10 ? `0${month}` : month.toString()
+  };
+});
 
 (async () => {
-  const getFilms = async (month, day) => {
-    const url = 'https://iffr.com/en/programme/2020/per-day?' +
-    `date[value]=${month}/${day}/2020&hour=9`;
-
+  const getFilms = async (month, day, year = constants.FESTIVAL_YEAR) => {
+    // filtered by films with type[]=1 and short-films with type[]=2
+    const url = `https://iffr.com/en/programme/${year}/per-day?` +
+    `date[value]=${month}/${day}/${year}&hour=9&type[]=1&type[]=2`;
     const page = await browser.newPage();
     await page.goto(url);
-    const films = await page.evaluate((m, d) => {
+    const films = await page.evaluate((m, d, y) => {
+      const filmTypes = ['feature', 'short-film', 'mid-length'];
+      const date = `${y}-${m}-${d}`;
       return Array.from(document.querySelectorAll('li.block-type-film'))
-        .filter(film => film.getAttribute('data-showtype') === 'film')
         .filter(film => {
-          const filmTypes = ['feature', 'short-film', 'mid-length'];
           return filmTypes.includes(film.getAttribute('data-category'));
         })
         .map(film => {
-          const locationInfo = film.querySelector('.location-text').innerText.split(' at ');
-          const time = locationInfo[0].split(' - ')[0];
-          const date = `2020-${m}-${d}`;
+          // .'location-text' looks like this: '09:00 - 10:41 at Cinerama 3'
+          const [startEndTime, location] = film.querySelector('.location-text').innerText.split(' at ');
+          const [time] = startEndTime.split(' - ');
+          const category = film.getAttribute('data-category');
+          const title = film.querySelector('h2').innerText;
+          const director = film.querySelector('strong').innerText;
+
           return {
-            category: film.getAttribute('data-category'),
-            title: film.querySelector('h2').innerText,
-            director: film.querySelector('strong').innerText,
+            category,
+            title,
+            director,
             day: date,
             time,
-            location: locationInfo[1]
+            location
           };
         });
-    }, month, day);
+    }, month, day, year);
 
     await page.close();
 
@@ -39,24 +54,18 @@ const axios = require('axios');
 
   const browser = await puppeteer.launch();
 
-  const festivalDays =
-    ['01/23', '01/24'];
-  //, '01/25', '01/26', '01/27', '01/28', '01/29', '01/30', '01/31', '02/01'];
-
-  const dailyUrls = festivalDays.map(fd => fd.split('/'));
-
   const iffr = [];
 
-  iffr[0] = await getFilms(dailyUrls[0][0], dailyUrls[0][1]);
-  iffr[1] = await getFilms(dailyUrls[1][0], dailyUrls[1][1]);
-  // iffr[2] = await getFilms(dailyUrls[2][0], dailyUrls[2][1]);
-  // iffr[3] = await getFilms(dailyUrls[3][0], dailyUrls[3][1]);
-  // iffr[4] = await getFilms(dailyUrls[4][0], dailyUrls[4][1]);
-  // iffr[5] = await getFilms(dailyUrls[5][0], dailyUrls[5][1]);
-  // iffr[6] = await getFilms(dailyUrls[6][0], dailyUrls[6][1]);
-  // iffr[7] = await getFilms(dailyUrls[7][0], dailyUrls[7][1]);
-  // iffr[8] = await getFilms(dailyUrls[8][0], dailyUrls[8][1]);
-  // iffr[9] = await getFilms(dailyUrls[9][0], dailyUrls[9][1]);
+  /*
+    // TODO: write a Promise.all() to do this:
+    const getAllData = async () => {
+      return Promise.all(festivalDates.map(date => getFilms(date.month, date.day)));
+    }
+
+  */
+
+  iffr[0] = await getFilms(festivalDates[0].month, festivalDates[0].day);
+  // iffr[1] = await getFilms(festivalDates[1].month, festivalDates[1].day);
 
   const iffrData = iffr.flat();
 
