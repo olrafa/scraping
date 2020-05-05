@@ -1,5 +1,7 @@
 
 const puppeteer = require('puppeteer');
+const settings = require('./settings');
+const axios = require('axios');
 
 (async () => {
   const getFilms = async (month, day) => {
@@ -48,18 +50,28 @@ const puppeteer = require('puppeteer');
 
   iffr[0] = await getFilms(dailyUrls[0][0], dailyUrls[0][1]);
   iffr[1] = await getFilms(dailyUrls[1][0], dailyUrls[1][1]);
-  iffr[2] = await getFilms(dailyUrls[2][0], dailyUrls[2][1]);
-  iffr[3] = await getFilms(dailyUrls[3][0], dailyUrls[3][1]);
-  iffr[4] = await getFilms(dailyUrls[4][0], dailyUrls[4][1]);
-  iffr[5] = await getFilms(dailyUrls[5][0], dailyUrls[5][1]);
-  iffr[6] = await getFilms(dailyUrls[6][0], dailyUrls[6][1]);
-  iffr[7] = await getFilms(dailyUrls[7][0], dailyUrls[7][1]);
-  iffr[8] = await getFilms(dailyUrls[8][0], dailyUrls[8][1]);
-  iffr[9] = await getFilms(dailyUrls[9][0], dailyUrls[9][1]);
+  // iffr[2] = await getFilms(dailyUrls[2][0], dailyUrls[2][1]);
+  // iffr[3] = await getFilms(dailyUrls[3][0], dailyUrls[3][1]);
+  // iffr[4] = await getFilms(dailyUrls[4][0], dailyUrls[4][1]);
+  // iffr[5] = await getFilms(dailyUrls[5][0], dailyUrls[5][1]);
+  // iffr[6] = await getFilms(dailyUrls[6][0], dailyUrls[6][1]);
+  // iffr[7] = await getFilms(dailyUrls[7][0], dailyUrls[7][1]);
+  // iffr[8] = await getFilms(dailyUrls[8][0], dailyUrls[8][1]);
+  // iffr[9] = await getFilms(dailyUrls[9][0], dailyUrls[9][1]);
 
   const iffrData = iffr.flat();
 
-  console.log(iffrData);
+  const { baseUrl } = settings;
+  
+  axios.post(`${baseUrl}/scrape`, iffrData[8])
+    .then(function (response) {
+      console.log(response.data.message);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+
+  console.log(iffrData[13]);
 
   await browser.close();
 })();
