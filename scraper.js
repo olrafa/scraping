@@ -19,15 +19,14 @@ const axios = require('axios');
         })
         .map(film => {
           const locationInfo = film.querySelector('.location-text').innerText.split(' at ');
-          const time = locationInfo[0].split(' - ');
+          const time = locationInfo[0].split(' - ')[0];
           const date = `2020-${m}-${d}`;
           return {
             category: film.getAttribute('data-category'),
             title: film.querySelector('h2').innerText,
             director: film.querySelector('strong').innerText,
             day: date,
-            startTime: time[0],
-            endTime: time[1],
+            time,
             location: locationInfo[1]
           };
         });
@@ -61,19 +60,15 @@ const axios = require('axios');
 
   const iffrData = iffr.flat();
 
-  const samplePost = iffrData.slice(0, 4);
-
   const { baseUrl } = settings;
 
-  axios.post(`${baseUrl}/scrape`, samplePost)
+  axios.post(`${baseUrl}/scrape`, iffrData)
     .then(function (response) {
       console.log(response.data.message);
     })
     .catch(function (error) {
       console.log(error);
     });
-
-  console.log(iffrData[13]);
 
   await browser.close();
 })();
