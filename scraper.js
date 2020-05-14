@@ -64,20 +64,28 @@ const festivalDates = utils.rangeDays(constants.START_DATE, constants.END_DATE).
 
   */
 
-  iffr[0] = await getFilms(festivalDates[0].month, festivalDates[0].day);
-  // iffr[1] = await getFilms(festivalDates[1].month, festivalDates[1].day);
-
-  const iffrData = iffr.flat();
-
   const { baseUrl } = settings;
 
-  axios.post(`${baseUrl}/scrape`, iffrData)
-    .then(function (response) {
-      console.log(response.data.message);
-    })
-    .catch(function (error) {
-      console.log(error);
-    });
+  const postData = data => {
+    axios.post(`${baseUrl}/scrape`, data)
+      .then(function (response) {
+        console.log(response.data.message);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+
+  iffr[0] = await getFilms(festivalDates[0].month, festivalDates[0].day).then(movies => postData(movies));
+  iffr[1] = await getFilms(festivalDates[1].month, festivalDates[1].day).then(movies => postData(movies));
+  iffr[2] = await getFilms(festivalDates[2].month, festivalDates[2].day).then(movies => postData(movies));
+  iffr[3] = await getFilms(festivalDates[3].month, festivalDates[3].day).then(movies => postData(movies));
+  iffr[4] = await getFilms(festivalDates[4].month, festivalDates[4].day).then(movies => postData(movies));
+  iffr[5] = await getFilms(festivalDates[5].month, festivalDates[5].day).then(movies => postData(movies));
+  iffr[6] = await getFilms(festivalDates[6].month, festivalDates[6].day).then(movies => postData(movies));
+  iffr[7] = await getFilms(festivalDates[7].month, festivalDates[7].day).then(movies => postData(movies));
+  iffr[8] = await getFilms(festivalDates[8].month, festivalDates[8].day).then(movies => postData(movies));
+  iffr[9] = await getFilms(festivalDates[9].month, festivalDates[9].day).then(movies => postData(movies));
 
   await browser.close();
 })();
