@@ -5,6 +5,8 @@ const constants = require('./constants');
 const settings = require('./settings');
 const utils = require('./utils');
 
+const iffrHome = 'https://iffr.com';
+
 const festivalDates = utils.rangeDays(constants.START_DATE, constants.END_DATE).map(date => {
   const dayMonth = date.getDate();
   const month = date.getMonth() + 1;
@@ -17,22 +19,27 @@ const festivalDates = utils.rangeDays(constants.START_DATE, constants.END_DATE).
 (async () => {
   const getFilms = async (month, day, year = constants.FESTIVAL_YEAR) => {
     // filtered by films with type[]=1 and short-films with type[]=2
-    const url = `https://iffr.com/en/programme/${year}/per-day?` +
+    const url = `${iffrHome}/en/programme/${year}/per-day?` +
     `date[value]=${month}/${day}/${year}&hour=9&type[]=1&type[]=2`;
     const page = await browser.newPage();
     await page.goto(url);
     const films = await page.evaluate((m, d, y) => {
-      const filmTypes = ['feature', 'short-film', 'mid-length'];
+      const showTypes = ['film', 'short-film'];
       const date = `${y}-${m}-${d}`;
-      return Array.from(document.querySelectorAll('li.block-type-film'))
-        .filter(film => {
-          return filmTypes.includes(film.getAttribute('data-category'));
-        })
+      const filmsInPage = Array.from(document.querySelectorAll('li.block-type-film'));
+      return filmsInPage.filter(film => {
+        const filmShowtype = film.getAttribute('data-showtype');
+        const realMovie = showTypes.includes(filmShowtype);
+        const category = film.getAttribute('data-category');
+        const feature = category && category !== 'installation';
+        const short = !category && filmShowtype === 'short-film';
+        return realMovie && (feature || short);
+      })
         .map(film => {
           // .'location-text' looks like this: '09:00 - 10:41 at Cinerama 3'
           const [startEndTime, location] = film.querySelector('.location-text').innerText.split(' at ');
           const [time] = startEndTime.split(' - ');
-          const category = film.getAttribute('data-category');
+          const category = film.getAttribute('data-showtype');
           const title = film.querySelector('h2').innerText;
           const director = film.querySelector('strong').innerText;
 
